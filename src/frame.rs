@@ -1,6 +1,7 @@
 use crate::{
     draw_call::{single_line, Absolute, DrawCall, DrawCallKind, DrawCalls},
     pair::{Pair, Pos, Size},
+    text_size::UnicodeSize,
 };
 use crossterm::{
     cursor::MoveTo,
@@ -12,7 +13,6 @@ use std::{
     io::{self, Write},
     marker::PhantomData,
 };
-use unicode_display_width::width as display_width;
 use unicode_segmentation::UnicodeSegmentation;
 
 #[derive(Debug, Clone)]
@@ -51,17 +51,13 @@ impl Frame<NonDiff> {
         }
     }
 
-    fn apply_print_line(&mut self, pos: Pair<Pos>, string: &str) {
+    fn apply_print_line(&mut self, mut pos: Pair<Pos>, string: &str) {
         let line = single_line(string);
 
-        let mut x_offset = 0;
-
         for grapheme in line.graphemes(true) {
-            let pos = pos.offset(Pair::new(x_offset, 0));
-
             self.graphemes.insert(pos, grapheme.to_owned());
 
-            x_offset += display_width(grapheme) as u16;
+            pos = pos.add(Pair::new(grapheme.width(), 0));
         }
     }
 

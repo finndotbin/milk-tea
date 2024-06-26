@@ -1,6 +1,7 @@
 pub mod area;
 pub mod draw_call;
 pub mod pair;
+pub mod text_size;
 
 mod frame;
 

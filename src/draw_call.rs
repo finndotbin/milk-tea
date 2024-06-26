@@ -1,7 +1,9 @@
-use crate::pair::{Pair, Pos, Size};
+use crate::{
+    pair::{Pair, Pos, Size},
+    text_size::UnicodeSize,
+};
 use crossterm::style::ContentStyle;
 use std::marker::PhantomData;
-use unicode_display_width::width as display_width;
 
 pub type DrawCalls = Vec<DrawCall<Absolute>>;
 
@@ -31,10 +33,7 @@ impl<T> DrawCall<T> {
 
     pub fn size(&self) -> Pair<Size> {
         match &self.kind {
-            DrawCallKind::PrintLine(string) => {
-                let width = display_width(&single_line(string)) as u16;
-                Pair::new(width, 1)
-            }
+            DrawCallKind::PrintLine(string) => Pair::new(single_line(string).width(), 1),
             DrawCallKind::SetStyle(_) => Pair::new(1, 1),
         }
     }
@@ -47,7 +46,7 @@ impl DrawCall<NonAbsolute> {
         }
 
         Some(DrawCall {
-            pos: self.pos.offset(pos),
+            pos: self.pos.add(pos),
             kind: self.kind.clone(),
             _is_absolute: PhantomData,
         })
