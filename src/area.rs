@@ -11,7 +11,7 @@ pub struct Area {
 }
 
 impl Area {
-    pub(crate) fn new(pos: Pair<Pos>, size: Pair<Size>) -> Self {
+    pub fn new(pos: Pair<Pos>, size: Pair<Size>) -> Self {
         Self {
             pos,
             size,
@@ -19,7 +19,10 @@ impl Area {
         }
     }
 
-    /// Attempts to push a `DrawCall`. If the push is successful it will return `Ok otherwise `Err`.
+    pub fn size(&self) -> Pair<Size> {
+        self.size
+    }
+
     pub fn push(&mut self, call: DrawCall<NonAbsolute>) -> Result<(), OutOfAreaError> {
         if let Some(absolute) = call.to_absolute(self.pos, self.size) {
             self.calls.push(absolute);
