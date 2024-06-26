@@ -41,12 +41,14 @@ impl<T> DrawCall<T> {
 
 impl DrawCall<NonAbsolute> {
     pub fn to_absolute(&self, pos: Pair<Pos>, size: Pair<Size>) -> Option<DrawCall<Absolute>> {
-        if !self.pos.is_inside(self.size(), pos, size) {
+        let self_pos = self.pos.add(pos);
+
+        if !self_pos.is_inside(self.size(), pos, size) {
             return None;
         }
 
         Some(DrawCall {
-            pos: self.pos.add(pos),
+            pos: self_pos,
             kind: self.kind.clone(),
             _is_absolute: PhantomData,
         })

@@ -24,11 +24,11 @@ impl Area {
     }
 
     pub fn center(&self) -> Pair<Pos> {
-        self.size.center().add(self.pos)
+        self.size.center()
     }
 
-    pub fn center_in(&self, size: Pair<Size>) -> Pair<Pos> {
-        size.center_in(self.size).add(self.pos)
+    pub fn center_size(&self, size: Pair<Size>) -> Pair<Pos> {
+        self.size.center().sub(size.center())
     }
 
     pub fn push(&mut self, call: DrawCall<NonAbsolute>) -> Result<(), OutOfAreaError> {
@@ -49,7 +49,7 @@ impl Area {
         Ok(())
     }
 
-    pub fn sub_area(
+    pub fn sub_element(
         &mut self,
         sub_pos: Pair<Pos>,
         sub_size: Pair<Size>,
@@ -57,15 +57,14 @@ impl Area {
     ) -> Result<(), OutOfAreaError> {
         let sub_pos = self.pos.add(sub_pos);
 
-        if !self.pos.is_inside(self.size, sub_pos, sub_size) {
+        if !sub_pos.is_inside(sub_size, self.pos, self.size) {
             return Err(OutOfAreaError);
         }
 
         let mut sub_area = Area::new(sub_pos, sub_size);
-
         sub_element.draw(&mut sub_area);
 
-        self.calls.append(&mut sub_area.calls);
+        self.calls.extend(sub_area.collect());
 
         Ok(())
     }

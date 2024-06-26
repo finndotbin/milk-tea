@@ -20,6 +20,14 @@ impl<T> Pair<T> {
         Self::new(x, x)
     }
 
+    pub fn with_x(self, x: u16) -> Self {
+        self.map_x(|_| x)
+    }
+
+    pub fn with_y(self, y: u16) -> Self {
+        self.map_y(|_| y)
+    }
+
     pub fn map(self, f: impl Fn(u16) -> u16) -> Self {
         self.map_x(&f).map_y(&f)
     }
@@ -67,10 +75,6 @@ impl From<Pair<Size>> for Pair<Pos> {
 impl Pair<Size> {
     pub fn center(self) -> Pair<Pos> {
         self.map(|x| x / 2).into()
-    }
-
-    pub fn center_in(self, size: Pair<Size>) -> Pair<Pos> {
-        size.center().sub(self.center())
     }
 }
 
