@@ -14,6 +14,7 @@ fn main() {
 
 fn draw(_state: &App) -> Box<dyn Element> {
     Box::new(Split(
+        "this is on the top!".to_owned(),
         "this is on the left!".to_owned(),
         "this is on the right!".to_owned(),
     ))
@@ -39,21 +40,25 @@ impl State for App {
     }
 }
 
-struct Split(String, String);
+struct Split(String, String, String);
 
 impl Element for Split {
     fn draw(&self, area: &mut Area) {
-        let size = area.size().map_x(|x| x / 2);
+        let upper_size = area.size().map_y(|y| y / 2);
+        let lower_size = area.size().map(|xy| xy / 2);
+
+        area.sub_element(Pair::fill(0), upper_size, Box::new(Center(self.0.clone())))
+            .unwrap();
         area.sub_element(
-            Pair::fill(0),
-            area.size().map_x(|x| x / 2),
-            Box::new(Center(self.0.clone())),
+            lower_size.with_x(0).into(),
+            lower_size,
+            Box::new(Center(self.1.clone())),
         )
         .unwrap();
         area.sub_element(
-            size.with_y(0).into(),
-            size,
-            Box::new(Center(self.1.clone())),
+            lower_size.into(),
+            lower_size,
+            Box::new(Center(self.2.clone())),
         )
         .unwrap();
     }
