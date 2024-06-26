@@ -1,6 +1,7 @@
 [package]
 name = "milk-tea"
 version = "0.1.0-dev"
+authors = ["finndotbin"]
 edition = "2021"
 rust_version = "1.79.0"
 description = "A minimal library for creating TUI apps"
