@@ -42,8 +42,8 @@ impl Element for Center {
         let text_0 = "this text is centered!".to_owned();
         let text_1 = "try resizing the window ^.^".to_owned();
 
-        let pos_0 = area.center_in(text_0.size());
-        let pos_1 = area.center_in(text_1.size()).map_y(|y| y - 1);
+        let pos_0 = area.center_size(text_0.size());
+        let pos_1 = area.center_size(text_1.size()).map_y(|y| y + 1);
 
         area.push_all(vec![
             DrawCall::new(pos_0, DrawCallKind::PrintLine(text_0)),
