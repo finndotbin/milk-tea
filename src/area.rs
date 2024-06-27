@@ -28,7 +28,7 @@ impl Area {
     }
 
     pub fn center_size(&self, size: Pair<Size>) -> Pair<Pos> {
-        self.size.center() + size.center()
+        self.size.center() - size.center()
     }
 
     pub fn push(&mut self, call: DrawCall<NonAbsolute>) {
