@@ -9,7 +9,7 @@ use milk_tea::{
     draw_call::{DrawCall, DrawCallKind},
     run,
     text_size::UnicodeSize,
-    State,
+    Model,
 };
 
 fn main() {
@@ -50,7 +50,7 @@ struct App {
     count: i32,
 }
 
-impl State for App {
+impl Model for App {
     fn should_exit(&self) -> bool {
         self.should_exit
     }

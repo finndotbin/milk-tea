@@ -7,7 +7,7 @@ use milk_tea::{
     pair::Pair,
     run,
     text_size::UnicodeSize,
-    State,
+    Model,
 };
 
 fn main() {
@@ -36,7 +36,7 @@ fn update(event: Event, app: &mut App) {
 #[derive(Default, Clone, PartialEq, Eq)]
 struct App(bool);
 
-impl State for App {
+impl Model for App {
     fn should_exit(&self) -> bool {
         self.0
     }
@@ -50,11 +50,11 @@ impl Element for Split {
         let lower_size = area.size().map(|xy| xy / 2);
 
         // Top element
-        area.sub_element(Pair::fill(0), upper_size, Box::new(Center(self.0.clone())))
+        area.sub_area(Pair::fill(0), upper_size, Box::new(Center(self.0.clone())))
             .unwrap();
 
         // Bottom-left element
-        area.sub_element(
+        area.sub_area(
             lower_size.with_x(0).into(),
             lower_size,
             Box::new(Center(self.1.clone())),
@@ -62,7 +62,7 @@ impl Element for Split {
         .unwrap();
 
         // Bottom-right element
-        area.sub_element(
+        area.sub_area(
             lower_size.into(),
             lower_size,
             Box::new(Center(self.2.clone())),
