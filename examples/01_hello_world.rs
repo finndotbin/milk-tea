@@ -1,4 +1,9 @@
-use crossterm::event::{Event, KeyCode, KeyEvent};
+//! Prints "hello world :3" in magenta and bold to the top left of the screen.
+
+use crossterm::{
+    event::{Event, KeyCode, KeyEvent},
+    style::{ContentStyle, Stylize},
+};
 use milk_tea::{
     area::{Area, Element},
     draw_call::{DrawCall, DrawCallKind},
@@ -35,10 +40,16 @@ struct Hello;
 
 impl Element for Hello {
     fn draw(&self, area: &mut Area) {
-        area.push(DrawCall::new(
-            (0, 0).into(),
-            DrawCallKind::PrintLine("hello world! :3".to_owned()),
-        ))
+        area.push_all(vec![
+            DrawCall::new(
+                (0, 0).into(),
+                DrawCallKind::SetStyle(ContentStyle::new().magenta().bold()),
+            ),
+            DrawCall::new(
+                (0, 0).into(),
+                DrawCallKind::PrintLine("hello world! :3".to_owned()),
+            ),
+        ])
         .unwrap();
     }
 }
