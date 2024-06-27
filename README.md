@@ -16,58 +16,51 @@ cargo add milk-tea
 ```rust
 //! Prints "hello world :3" in magenta and bold to the top left of the screen.
 
-use crossterm::{
-    event::{Event, KeyCode, KeyEvent},
-    style::{ContentStyle, Stylize},
-};
 use milk_tea::{
-    area::{Area, Element},
+    area::Area,
     draw_call::{DrawCall, DrawCallKind},
+    event::{Event, KeyCode, KeyEvent},
     run,
+    style::{ContentStyle, Stylize},
     text_size::UnicodeSize,
-    State,
 };
 
 fn main() {
-    run(App::default(), draw, update).unwrap();
+    run(Model::default(), view, update).unwrap();
 }
 
-fn draw(_state: &App) -> Box<dyn Element> {
-    Box::new(Hello)
+/// Handles drawing to the screen. An `Area` collects any draw calls we push to it to be rendered
+/// later.
+fn view(_model: &Model, area: &mut Area) {
+    area.push_all(vec![
+        DrawCall::new(
+            (0, 0).into(),
+            DrawCallKind::SetStyle(ContentStyle::new().magenta().bold()),
+        ),
+        DrawCall::new(
+            (0, 0).into(),
+            DrawCallKind::PrintLine("hello world! :3".limit_size(area.size())),
+        ),
+    ]);
 }
 
-fn update(event: Event, state: &mut App) {
+/// Handles events and updates the `Model`.
+fn update(event: Event, model: &mut Model) {
     if let Event::Key(KeyEvent {
         code: KeyCode::Esc, ..
     }) = event
     {
-        state.0 = true
+        model.0 = true
     }
 }
 
+/// Represents the application state.
 #[derive(Default, Clone, PartialEq, Eq)]
-struct App(bool);
+struct Model(bool);
 
-impl State for App {
+impl milk_tea::Model for Model {
     fn should_exit(&self) -> bool {
         self.0
-    }
-}
-
-struct Hello;
-
-impl Element for Hello {
-    fn draw(&self, area: &mut Area) {
-        area.push_all(vec![
-            DrawCall::new(
-                (0, 0).into(),
-                DrawCallKind::SetStyle(ContentStyle::new().magenta().bold()),
-            ),
-            DrawCall::new(
-                (0, 0).into(),
-                DrawCallKind::PrintLine("hello world! :3".limit_size(area.size())),
-            ),
-        ]);
     }
 }
 ```

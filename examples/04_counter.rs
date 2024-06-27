@@ -1,70 +1,75 @@
 //! Displays a counter than can be incremented and decremented with `k` and `j`.
 
-use crossterm::{
-    event::{Event, KeyCode, KeyEvent, KeyEventKind},
-    style::{ContentStyle, Stylize},
-};
+use std::cmp::Ordering;
+
 use milk_tea::{
     area::{Area, Element},
     draw_call::{DrawCall, DrawCallKind},
+    event::{Event, KeyCode, KeyEvent, KeyEventKind},
+    pair::Pair,
     run,
+    style::{ContentStyle, Stylize},
     text_size::UnicodeSize,
-    Model,
 };
 
 fn main() {
-    run(App::default(), draw, update).unwrap();
+    run(Model::default(), view, update).unwrap();
 }
 
-fn draw(state: &App) -> Box<dyn Element> {
-    let style = if state.count > 0 {
-        ContentStyle::new().cyan()
-    } else if state.count < 0 {
-        ContentStyle::new().magenta()
-    } else {
-        ContentStyle::new().grey()
+fn view(state: &Model, area: &mut Area) {
+    let style = match state.count.cmp(&0) {
+        Ordering::Greater => ContentStyle::new().cyan(),
+        Ordering::Less => ContentStyle::new().magenta(),
+        Ordering::Equal => ContentStyle::new().grey(),
     };
 
-    Box::new(Center(style, format!("{}", state.count)))
+    area.sub_element(
+        Pair::fill(0),
+        area.size(),
+        center(style, format!("{}", state.count)),
+    )
+    .unwrap();
 }
 
-fn update(event: Event, app: &mut App) {
+/// Returns an `Element` with centered text. `Element`s are just closures that take in an `&mut
+/// Area` to push draw calls to.
+fn center(style: ContentStyle, text: String) -> Element {
+    Box::new(move |area| {
+        area.push_all(vec![
+            DrawCall::new(area.center_size(text.size()), DrawCallKind::SetStyle(style)),
+            DrawCall::new(
+                area.center_size(text.size()),
+                DrawCallKind::PrintLine(text.limit_size(area.size())),
+            ),
+        ]);
+    })
+}
+
+fn update(event: Event, model: &mut Model) {
     if let Event::Key(KeyEvent {
         code,
         kind: KeyEventKind::Press,
         ..
     }) = event
     {
+        // Update the count based on the key pressed.
         match code {
-            KeyCode::Esc => app.should_exit = true,
-            KeyCode::Char('k') => app.count += 1,
-            KeyCode::Char('j') => app.count -= 1,
+            KeyCode::Esc => model.should_exit = true,
+            KeyCode::Char('k') => model.count += 1,
+            KeyCode::Char('j') => model.count -= 1,
             _ => {}
         }
     }
 }
 
 #[derive(Default, Clone, PartialEq, Eq)]
-struct App {
+struct Model {
     should_exit: bool,
     count: i32,
 }
 
-impl Model for App {
+impl milk_tea::Model for Model {
     fn should_exit(&self) -> bool {
         self.should_exit
-    }
-}
-
-struct Center(ContentStyle, String);
-
-impl Element for Center {
-    fn draw(&self, area: &mut Area) {
-        let pos = area.center_size(self.1.size());
-
-        area.push_all(vec![
-            DrawCall::new(pos, DrawCallKind::SetStyle(self.0)),
-            DrawCall::new(pos, DrawCallKind::PrintLine(self.1.limit_size(area.size()))),
-        ]);
     }
 }

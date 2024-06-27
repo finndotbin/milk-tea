@@ -1,55 +1,47 @@
 //! Prints two lines of text to the center of the screen.
 
-use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind};
 use milk_tea::{
-    area::{Area, Element},
+    area::Area,
     draw_call::{DrawCall, DrawCallKind},
+    event::{Event, KeyCode, KeyEvent, KeyEventKind},
     run,
     text_size::UnicodeSize,
-    Model,
 };
 
 fn main() {
-    run(App::default(), draw, update).unwrap();
+    run(Model::default(), view, update).unwrap();
 }
 
-fn draw(_state: &App) -> Box<dyn Element> {
-    Box::new(Center)
+fn view(_model: &Model, area: &mut Area) {
+    let text_0 = "this text is centered!".limit_size(area.size());
+    let text_1 = "try resizing the window ^.^".limit_size(area.size());
+
+    // `center_size` returns a position in the center of the `Area` according to a passed in size.
+    let pos_0 = area.center_size(text_0.size());
+    let pos_1 = area.center_size(text_1.size()).map_y(|y| y + 1);
+
+    area.push_all(vec![
+        DrawCall::new(pos_0, DrawCallKind::PrintLine(text_0)),
+        DrawCall::new(pos_1, DrawCallKind::PrintLine(text_1)),
+    ]);
 }
 
-fn update(event: Event, app: &mut App) {
+fn update(event: Event, model: &mut Model) {
     if let Event::Key(KeyEvent {
         code: KeyCode::Esc,
         kind: KeyEventKind::Press,
         ..
     }) = event
     {
-        app.0 = true;
+        model.0 = true;
     }
 }
 
 #[derive(Default, Clone, PartialEq, Eq)]
-struct App(bool);
+struct Model(bool);
 
-impl Model for App {
+impl milk_tea::Model for Model {
     fn should_exit(&self) -> bool {
         self.0
-    }
-}
-
-struct Center;
-
-impl Element for Center {
-    fn draw(&self, area: &mut Area) {
-        let text_0 = "this text is centered!".limit_size(area.size());
-        let text_1 = "try resizing the window ^.^".limit_size(area.size());
-
-        let pos_0 = area.center_size(text_0.size());
-        let pos_1 = area.center_size(text_1.size()).map_y(|y| y + 1);
-
-        area.push_all(vec![
-            DrawCall::new(pos_0, DrawCallKind::PrintLine(text_0)),
-            DrawCall::new(pos_1, DrawCallKind::PrintLine(text_1)),
-        ]);
     }
 }

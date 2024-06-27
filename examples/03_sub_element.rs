@@ -7,22 +7,51 @@ use milk_tea::{
     pair::Pair,
     run,
     text_size::UnicodeSize,
-    Model,
 };
 
 fn main() {
-    run(App::default(), draw, update).unwrap();
+    run(Model::default(), view, update).unwrap();
 }
 
-fn draw(_state: &App) -> Box<dyn Element> {
-    Box::new(Split(
-        "this is on the top!".to_owned(),
-        "this is on the left!".to_owned(),
-        "this is on the right!".to_owned(),
-    ))
+fn view(_model: &Model, area: &mut Area) {
+    // Split the screen into three sections, one upper and two lower.
+    let upper_size = area.size().map_y(|y| y / 2);
+    let lower_size = area.size().map(|xy| xy / 2);
+
+    area.sub_element(
+        Pair::fill(0),
+        upper_size,
+        Box::new(center("top text".to_owned())),
+    )
+    .unwrap();
+
+    area.sub_element(
+        lower_size.with_x(0).into(),
+        lower_size,
+        Box::new(center("bottom left text".to_owned())),
+    )
+    .unwrap();
+
+    area.sub_element(
+        lower_size.into(),
+        lower_size,
+        Box::new(center("bottom right text".to_owned())),
+    )
+    .unwrap();
 }
 
-fn update(event: Event, app: &mut App) {
+/// Returns an `Element` with centered text. `Element`s are just closures that take in an `&mut
+/// Area` to push draw calls to.
+fn center(text: String) -> Element {
+    Box::new(move |area| {
+        area.push_all(vec![DrawCall::new(
+            area.center_size(text.size()),
+            DrawCallKind::PrintLine(text.limit_size(area.size())),
+        )]);
+    })
+}
+
+fn update(event: Event, app: &mut Model) {
     if let Event::Key(KeyEvent {
         code: KeyCode::Esc,
         kind: KeyEventKind::Press,
@@ -34,50 +63,10 @@ fn update(event: Event, app: &mut App) {
 }
 
 #[derive(Default, Clone, PartialEq, Eq)]
-struct App(bool);
+struct Model(bool);
 
-impl Model for App {
+impl milk_tea::Model for Model {
     fn should_exit(&self) -> bool {
         self.0
-    }
-}
-
-struct Split(String, String, String);
-
-impl Element for Split {
-    fn draw(&self, area: &mut Area) {
-        let upper_size = area.size().map_y(|y| y / 2);
-        let lower_size = area.size().map(|xy| xy / 2);
-
-        // Top element
-        area.sub_area(Pair::fill(0), upper_size, Box::new(Center(self.0.clone())))
-            .unwrap();
-
-        // Bottom-left element
-        area.sub_area(
-            lower_size.with_x(0).into(),
-            lower_size,
-            Box::new(Center(self.1.clone())),
-        )
-        .unwrap();
-
-        // Bottom-right element
-        area.sub_area(
-            lower_size.into(),
-            lower_size,
-            Box::new(Center(self.2.clone())),
-        )
-        .unwrap();
-    }
-}
-
-struct Center(String);
-
-impl Element for Center {
-    fn draw(&self, area: &mut Area) {
-        area.push_all(vec![DrawCall::new(
-            area.center_size(self.0.size()),
-            DrawCallKind::PrintLine(self.0.limit_size(area.size())),
-        )]);
     }
 }
