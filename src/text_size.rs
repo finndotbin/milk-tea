@@ -36,7 +36,7 @@ where
         let mut result = String::new();
 
         for grapheme in self.as_ref().graphemes(true) {
-            let next_width = width + grapheme.width() as u16;
+            let next_width = width + grapheme.width();
 
             if next_width > limit {
                 return result;

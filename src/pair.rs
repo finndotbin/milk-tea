@@ -1,4 +1,4 @@
-use std::marker::PhantomData;
+use std::{marker::PhantomData, ops};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Pair<T> {
@@ -43,19 +43,33 @@ impl<T> Pair<T> {
     pub fn map_y(self, f: impl Fn(u16) -> u16) -> Self {
         Self::new(self.x, f(self.y))
     }
+}
 
-    pub fn add(self, pair: Pair<T>) -> Self {
+impl<T> From<(u16, u16)> for Pair<T> {
+    fn from(value: (u16, u16)) -> Self {
+        Self::new(value.0, value.1)
+    }
+}
+
+impl<T> ops::Add for Pair<T> {
+    type Output = Self;
+
+    fn add(self, pair: Pair<T>) -> Self {
         self.combine(pair, |a, b| a + b)
     }
+}
 
-    pub fn sub(self, pair: Pair<T>) -> Self {
+impl<T> ops::Sub for Pair<T> {
+    type Output = Self;
+
+    fn sub(self, pair: Pair<T>) -> Self {
         self.combine(pair, |a, b| a - b)
     }
 }
 
 impl Pair<Pos> {
     pub fn corner(self, size: Pair<Size>) -> Self {
-        self.add(size.into()).sub(Pair::fill(1))
+        self + size.into() - Pair::fill(1)
     }
 
     pub fn is_inside(self, self_size: Pair<Size>, pos: Pair<Pos>, size: Pair<Size>) -> bool {
@@ -75,12 +89,6 @@ impl From<Pair<Size>> for Pair<Pos> {
 impl Pair<Size> {
     pub fn center(self) -> Pair<Pos> {
         self.map(|x| x / 2).into()
-    }
-}
-
-impl<T> From<(u16, u16)> for Pair<T> {
-    fn from(value: (u16, u16)) -> Self {
-        Self::new(value.0, value.1)
     }
 }
 

@@ -28,7 +28,7 @@ impl Area {
     }
 
     pub fn center_size(&self, size: Pair<Size>) -> Pair<Pos> {
-        self.size.center().sub(size.center())
+        self.size.center() + size.center()
     }
 
     pub fn push(&mut self, call: DrawCall<NonAbsolute>) {
@@ -39,20 +39,20 @@ impl Area {
         let _ = self.try_push_all(calls);
     }
 
-    pub fn try_push(&mut self, call: DrawCall<NonAbsolute>) -> Result<(), OutOfAreaError> {
+    pub fn try_push(&mut self, call: DrawCall<NonAbsolute>) -> Result<(), AreaOverflowError> {
         if let Some(absolute) = call.to_absolute(self.pos, self.size) {
             self.calls.push(absolute);
 
             return Ok(());
         }
 
-        Err(OutOfAreaError)
+        Err(AreaOverflowError)
     }
 
     pub fn try_push_all(
         &mut self,
         calls: Vec<DrawCall<NonAbsolute>>,
-    ) -> Result<(), OutOfAreaError> {
+    ) -> Result<(), AreaOverflowError> {
         for call in calls {
             self.try_push(call)?;
         }
@@ -65,11 +65,11 @@ impl Area {
         sub_pos: Pair<Pos>,
         sub_size: Pair<Size>,
         sub_element: Box<dyn Element>,
-    ) -> Result<(), OutOfAreaError> {
-        let sub_pos = self.pos.add(sub_pos);
+    ) -> Result<(), AreaOverflowError> {
+        let sub_pos = self.pos + sub_pos;
 
         if !sub_pos.is_inside(sub_size, self.pos, self.size) {
-            return Err(OutOfAreaError);
+            return Err(AreaOverflowError);
         }
 
         let mut sub_area = Area::new(sub_pos, sub_size);
@@ -86,7 +86,7 @@ impl Area {
 }
 
 #[derive(Debug)]
-pub struct OutOfAreaError;
+pub struct AreaOverflowError;
 
 pub trait Element {
     fn draw(&self, area: &mut Area);

@@ -57,7 +57,7 @@ impl Frame<NonDiff> {
         for grapheme in line.graphemes(true) {
             self.graphemes.insert(pos, grapheme.to_owned());
 
-            pos = pos.add(Pair::new(grapheme.width(), 0));
+            pos = pos + Pair::new(grapheme.width(), 0);
         }
     }
 

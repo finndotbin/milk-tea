@@ -41,7 +41,7 @@ impl<T> DrawCall<T> {
 
 impl DrawCall<NonAbsolute> {
     pub fn to_absolute(&self, pos: Pair<Pos>, size: Pair<Size>) -> Option<DrawCall<Absolute>> {
-        let self_pos = self.pos.add(pos);
+        let self_pos = self.pos + pos;
 
         if !self_pos.is_inside(self.size(), pos, size) {
             return None;
