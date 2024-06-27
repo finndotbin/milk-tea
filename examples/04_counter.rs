@@ -64,8 +64,7 @@ impl Element for Center {
 
         area.push_all(vec![
             DrawCall::new(pos, DrawCallKind::SetStyle(self.0)),
-            DrawCall::new(pos, DrawCallKind::PrintLine(self.1.clone())),
-        ])
-        .unwrap();
+            DrawCall::new(pos, DrawCallKind::PrintLine(self.1.limit_size(area.size()))),
+        ]);
     }
 }

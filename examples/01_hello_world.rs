@@ -7,7 +7,9 @@ use crossterm::{
 use milk_tea::{
     area::{Area, Element},
     draw_call::{DrawCall, DrawCallKind},
-    run, State,
+    run,
+    text_size::UnicodeSize,
+    State,
 };
 
 fn main() {
@@ -47,9 +49,8 @@ impl Element for Hello {
             ),
             DrawCall::new(
                 (0, 0).into(),
-                DrawCallKind::PrintLine("hello world! :3".to_owned()),
+                DrawCallKind::PrintLine("hello world! :3".limit_size(area.size())),
             ),
-        ])
-        .unwrap();
+        ]);
     }
 }

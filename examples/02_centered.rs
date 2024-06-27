@@ -41,8 +41,8 @@ struct Center;
 
 impl Element for Center {
     fn draw(&self, area: &mut Area) {
-        let text_0 = "this text is centered!".to_owned();
-        let text_1 = "try resizing the window ^.^".to_owned();
+        let text_0 = "this text is centered!".limit_size(area.size());
+        let text_1 = "try resizing the window ^.^".limit_size(area.size());
 
         let pos_0 = area.center_size(text_0.size());
         let pos_1 = area.center_size(text_1.size()).map_y(|y| y + 1);
@@ -50,7 +50,6 @@ impl Element for Center {
         area.push_all(vec![
             DrawCall::new(pos_0, DrawCallKind::PrintLine(text_0)),
             DrawCall::new(pos_1, DrawCallKind::PrintLine(text_1)),
-        ])
-        .unwrap();
+        ]);
     }
 }

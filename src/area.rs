@@ -31,7 +31,15 @@ impl Area {
         self.size.center().sub(size.center())
     }
 
-    pub fn push(&mut self, call: DrawCall<NonAbsolute>) -> Result<(), OutOfAreaError> {
+    pub fn push(&mut self, call: DrawCall<NonAbsolute>) {
+        let _ = self.try_push(call);
+    }
+
+    pub fn push_all(&mut self, calls: Vec<DrawCall<NonAbsolute>>) {
+        let _ = self.try_push_all(calls);
+    }
+
+    pub fn try_push(&mut self, call: DrawCall<NonAbsolute>) -> Result<(), OutOfAreaError> {
         if let Some(absolute) = call.to_absolute(self.pos, self.size) {
             self.calls.push(absolute);
 
@@ -41,9 +49,12 @@ impl Area {
         Err(OutOfAreaError)
     }
 
-    pub fn push_all(&mut self, calls: Vec<DrawCall<NonAbsolute>>) -> Result<(), OutOfAreaError> {
+    pub fn try_push_all(
+        &mut self,
+        calls: Vec<DrawCall<NonAbsolute>>,
+    ) -> Result<(), OutOfAreaError> {
         for call in calls {
-            self.push(call)?;
+            self.try_push(call)?;
         }
 
         Ok(())

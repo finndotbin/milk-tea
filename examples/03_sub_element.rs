@@ -77,8 +77,7 @@ impl Element for Center {
     fn draw(&self, area: &mut Area) {
         area.push_all(vec![DrawCall::new(
             area.center_size(self.0.size()),
-            DrawCallKind::PrintLine(self.0.clone()),
-        )])
-        .unwrap();
+            DrawCallKind::PrintLine(self.0.limit_size(area.size())),
+        )]);
     }
 }
