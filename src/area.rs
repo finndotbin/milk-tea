@@ -60,11 +60,11 @@ impl Area {
         Ok(())
     }
 
-    pub fn sub_area(
+    pub fn sub_element(
         &mut self,
         sub_pos: Pair<Pos>,
         sub_size: Pair<Size>,
-        sub_fn: Box<dyn Fn(&mut Area)>,
+        sub_element: Element,
     ) -> Result<(), AreaOverflowError> {
         let sub_pos = self.pos + sub_pos;
 
@@ -73,7 +73,7 @@ impl Area {
         }
 
         let mut sub_area = Area::new(sub_pos, sub_size);
-        sub_fn(&mut sub_area);
+        sub_element(&mut sub_area);
 
         self.calls.extend(sub_area.collect());
 
@@ -87,3 +87,5 @@ impl Area {
 
 #[derive(Debug)]
 pub struct AreaOverflowError;
+
+pub type Element = Box<dyn Fn(&mut Area)>;
