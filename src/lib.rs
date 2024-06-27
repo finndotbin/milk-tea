@@ -5,12 +5,10 @@ pub mod text_size;
 
 mod frame;
 
+pub use crossterm::{self, event, style};
+
 use area::{Area, Element};
-use crossterm::{
-    cursor,
-    event::{self, Event},
-    terminal, ExecutableCommand, QueueableCommand,
-};
+use crossterm::{cursor, event::Event, terminal, ExecutableCommand, QueueableCommand};
 use frame::Frame;
 use pair::Pair;
 use std::io;
