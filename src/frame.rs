@@ -65,8 +65,8 @@ impl Frame<NonDiff> {
         self.styles.insert(pos, *style);
     }
 
-    pub fn diff(&self, last: &Frame<NonDiff>) -> Frame<Diff> {
-        let graphemes = map_diff(&self.graphemes, &last.graphemes, Some(" ".to_owned()));
+    pub fn diff(&self, was_resized: bool, last: &Frame<NonDiff>) -> Frame<Diff> {
+        let graphemes = diff_graphemes(&self.graphemes, &last.graphemes, was_resized);
 
         Frame {
             styles: self.styles.clone(),
@@ -77,7 +77,12 @@ impl Frame<NonDiff> {
 }
 
 impl Frame<Diff> {
-    pub fn draw(&self, size: Pair<Size>, stdout: &mut io::Stdout) -> io::Result<()> {
+    pub fn draw(
+        &self,
+        was_resized: bool,
+        size: Pair<Size>,
+        stdout: &mut io::Stdout,
+    ) -> io::Result<()> {
         stdout.queue(ResetColor)?;
 
         for x in 0..size.x {
@@ -91,6 +96,8 @@ impl Frame<Diff> {
 
                 if let Some(grapheme) = self.graphemes.get(&pos) {
                     stdout.queue(Print(grapheme))?;
+                } else if was_resized {
+                    stdout.queue(Print(" ".to_owned()))?;
                 }
             }
         }
@@ -107,11 +114,11 @@ pub struct NonDiff;
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct Diff;
 
-fn map_diff<T: Clone + PartialEq + Eq>(
-    new: &HashMap<Pair<Pos>, T>,
-    old: &HashMap<Pair<Pos>, T>,
-    fill: Option<T>,
-) -> HashMap<Pair<Pos>, T> {
+fn diff_graphemes(
+    new: &HashMap<Pair<Pos>, String>,
+    old: &HashMap<Pair<Pos>, String>,
+    force_new: bool,
+) -> HashMap<Pair<Pos>, String> {
     let mut old = old.clone();
     let mut diff = HashMap::new();
 
@@ -121,15 +128,13 @@ fn map_diff<T: Clone + PartialEq + Eq>(
             continue;
         };
 
-        if new_entry != &old_entry {
+        if new_entry != &old_entry || force_new {
             diff.insert(*pos, new_entry.clone());
         }
     }
 
-    if let Some(fill) = fill {
-        for (pos, _) in old.iter() {
-            diff.insert(*pos, fill.clone());
-        }
+    for (pos, _) in old.iter() {
+        diff.insert(*pos, " ".to_owned());
     }
 
     diff

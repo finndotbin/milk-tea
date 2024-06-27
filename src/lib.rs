@@ -32,13 +32,7 @@ where
     let mut was_resized = true;
 
     while !state.should_exit() {
-        let state_changed = state != last_state;
-
-        if state_changed {
-            element = view(&state);
-        }
-
-        if state_changed || was_resized {
+        if state != last_state || was_resized {
             let size = terminal::size()?.into();
 
             let calls = {
@@ -49,10 +43,16 @@ where
             };
 
             let frame = Frame::from_calls(&calls);
-            frame.diff(&last_frame).draw(size, &mut stdout)?;
+            if was_resized {
+                frame
+                    .diff(was_resized, &last_frame)
+                    .draw(was_resized, size, &mut stdout)?;
+            }
 
             last_frame = frame;
+            element = view(&state);
         }
+
         last_state = state.clone();
 
         let event = event::read()?;
