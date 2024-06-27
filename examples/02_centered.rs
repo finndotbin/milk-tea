@@ -1,3 +1,5 @@
+//! Prints two lines of text to the center of the screen.
+
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind};
 use milk_tea::{
     area::{Area, Element},

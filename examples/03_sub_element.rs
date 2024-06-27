@@ -1,3 +1,5 @@
+//! Uses sub-elements to divide the screen into segments.
+
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind};
 use milk_tea::{
     area::{Area, Element},
@@ -47,14 +49,19 @@ impl Element for Split {
         let upper_size = area.size().map_y(|y| y / 2);
         let lower_size = area.size().map(|xy| xy / 2);
 
+        // Top element
         area.sub_element(Pair::fill(0), upper_size, Box::new(Center(self.0.clone())))
             .unwrap();
+
+        // Bottom-left element
         area.sub_element(
             lower_size.with_x(0).into(),
             lower_size,
             Box::new(Center(self.1.clone())),
         )
         .unwrap();
+
+        // Bottom-right element
         area.sub_element(
             lower_size.into(),
             lower_size,
