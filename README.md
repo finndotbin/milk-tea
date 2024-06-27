@@ -1,8 +1,17 @@
-# 🧋 milk-tea
+# 🧋 Milk Tea
 
-`milk-tea` is a minimal Rust library for creating TUI (terminal user interface) apps. It takes a functional approach to constructing applications inspired by many modern web frameworks.
+Milk Tea is a minimal Rust library for creating TUI (terminal user interface) apps. It takes a functional approach to constructing applications inspired by many modern web frameworks.
 
-## Example
+[Bubble Tea]: https://github.com/charmbracelet/bubbletea
+
+**NOTE:** This library has nothing to do with the Go library [Bubble Tea]. It just happens to also be named around boba tea and just happens to also be an MVU-based TUI library. (I don't know how to Google project names apparently QwQ)
+
+## Getting Started
+
+```sh
+cargo add milk-tea
+```
+
 
 ```rust
 //! Prints "hello world :3" in magenta and bold to the top left of the screen.
