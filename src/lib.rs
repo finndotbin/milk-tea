@@ -1,6 +1,7 @@
 pub mod area;
 pub mod draw_call;
 pub mod pair;
+pub mod rect;
 pub mod text_size;
 
 mod frame;
@@ -30,9 +31,13 @@ where
 
     while !model.should_exit() {
         if model != last_state || was_resized {
-            let size = terminal::size()?.into();
+            let size = Pair::from(terminal::size()?);
 
-            let mut area = Area::new(Pair::new(0, 0), size);
+            if size.x == 0 || size.y == 0 {
+                break;
+            }
+
+            let mut area = Area::new(size.as_rect());
             view(&model, &mut area);
 
             let calls = area.collect();

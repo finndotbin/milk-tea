@@ -1,5 +1,6 @@
 use crate::{
     pair::{Pair, Pos, Size},
+    rect::Rect,
     text_size::UnicodeSize,
 };
 use crossterm::style::ContentStyle;
@@ -31,6 +32,10 @@ impl<T> DrawCall<T> {
         &self.kind
     }
 
+    pub fn rect(&self) -> Rect {
+        Rect::new(self.pos, self.size())
+    }
+
     pub fn size(&self) -> Pair<Size> {
         match &self.kind {
             DrawCallKind::PrintLine(string) => Pair::new(single_line(string).width(), 1),
@@ -40,15 +45,15 @@ impl<T> DrawCall<T> {
 }
 
 impl DrawCall<NonAbsolute> {
-    pub fn to_absolute(&self, pos: Pair<Pos>, size: Pair<Size>) -> Option<DrawCall<Absolute>> {
-        let self_pos = self.pos + pos;
+    pub fn to_absolute(&self, rect: Rect) -> Option<DrawCall<Absolute>> {
+        let self_rect = self.rect().map_pos(|pos| pos + rect.pos);
 
-        if !self_pos.is_inside(self.size(), pos, size) {
+        if !(self_rect.is_inside(rect)) {
             return None;
         }
 
         Some(DrawCall {
-            pos: self_pos,
+            pos: self_rect.pos,
             kind: self.kind.clone(),
             _is_absolute: PhantomData,
         })

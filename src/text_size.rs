@@ -1,4 +1,7 @@
-use crate::pair::{Pair, Size};
+use crate::{
+    pair::{Pair, Size},
+    rect::Rect,
+};
 use unicode_display_width::width;
 use unicode_segmentation::UnicodeSegmentation;
 
@@ -6,6 +9,7 @@ pub trait UnicodeSize {
     fn size(&self) -> Pair<Size>;
     fn width(&self) -> u16;
     fn height(&self) -> u16;
+    fn rect(&self) -> Rect;
     fn limit_size(&self, limit: Pair<Size>) -> String;
     fn limit_width(&self, limit: u16) -> String;
     fn limit_height(&self, limit: u16) -> String;
@@ -15,6 +19,10 @@ impl<T> UnicodeSize for T
 where
     T: AsRef<str>,
 {
+    fn size(&self) -> Pair<Size> {
+        Pair::new(self.width(), self.height())
+    }
+
     fn width(&self) -> u16 {
         width(self.as_ref()) as u16
     }
@@ -23,8 +31,8 @@ where
         self.as_ref().lines().count() as u16
     }
 
-    fn size(&self) -> Pair<Size> {
-        Pair::new(self.width(), self.height())
+    fn rect(&self) -> Rect {
+        self.size().as_rect()
     }
 
     fn limit_size(&self, limit: Pair<Size>) -> String {

@@ -17,8 +17,8 @@ fn view(_model: &Model, area: &mut Area) {
     let text_1 = "try resizing the window ^.^".limit_size(area.size());
 
     // `center_size` returns a position in the center of the `Area` according to a passed in size.
-    let pos_0 = area.center_size(text_0.size());
-    let pos_1 = area.center_size(text_1.size()).map_y(|y| y + 1);
+    let pos_0 = area.center_rect(text_0.rect()).pos;
+    let pos_1 = area.center_rect(text_1.rect()).pos.map_y(|y| y + 1);
 
     area.push_all(vec![
         DrawCall::new(pos_0, DrawCallKind::PrintLine(text_0)),

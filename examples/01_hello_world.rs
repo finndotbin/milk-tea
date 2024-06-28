@@ -4,6 +4,7 @@ use milk_tea::{
     area::Area,
     draw_call::{DrawCall, DrawCallKind},
     event::{Event, KeyCode, KeyEvent},
+    pair::Pair,
     run,
     style::{ContentStyle, Stylize},
     text_size::UnicodeSize,
@@ -18,11 +19,11 @@ fn main() {
 fn view(_model: &Model, area: &mut Area) {
     area.push_all(vec![
         DrawCall::new(
-            (0, 0).into(),
+            Pair::fill(0),
             DrawCallKind::SetStyle(ContentStyle::new().magenta().bold()),
         ),
         DrawCall::new(
-            (0, 0).into(),
+            Pair::fill(0),
             DrawCallKind::PrintLine("hello world! :3".limit_size(area.size())),
         ),
     ]);

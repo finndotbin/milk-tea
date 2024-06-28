@@ -1,10 +1,10 @@
-//! Uses sub-elements to divide the screen into segments.
+//! Uses elements to divide the screen into segments.
 
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind};
 use milk_tea::{
     area::{Area, Element},
     draw_call::{DrawCall, DrawCallKind},
-    pair::Pair,
+    rect::Rect,
     run,
     text_size::UnicodeSize,
 };
@@ -15,29 +15,15 @@ fn main() {
 
 fn view(_model: &Model, area: &mut Area) {
     // Split the screen into three sections, one upper and two lower.
-    let upper_size = area.size().map_y(|y| y / 2);
+    let upper = area.size().map_y(|y| y / 2).as_rect();
+
     let lower_size = area.size().map(|xy| xy / 2);
+    let lower_left = Rect::new(lower_size.with_x(0).into(), lower_size);
+    let lower_right = Rect::new(lower_size.into(), lower_size);
 
-    area.sub_element(
-        Pair::fill(0),
-        upper_size,
-        Box::new(center("top text".to_owned())),
-    )
-    .unwrap();
-
-    area.sub_element(
-        lower_size.with_x(0).into(),
-        lower_size,
-        Box::new(center("bottom left text".to_owned())),
-    )
-    .unwrap();
-
-    area.sub_element(
-        lower_size.into(),
-        lower_size,
-        Box::new(center("bottom right text".to_owned())),
-    )
-    .unwrap();
+    area.push_element(upper, Box::new(center("top text".to_owned())));
+    area.push_element(lower_left, Box::new(center("lower left text".to_owned())));
+    area.push_element(lower_right, Box::new(center("lower right text".to_owned())));
 }
 
 /// Returns an `Element` with centered text. `Element`s are just closures that take in an `&mut
@@ -45,7 +31,7 @@ fn view(_model: &Model, area: &mut Area) {
 fn center(text: String) -> Element {
     Box::new(move |area| {
         area.push_all(vec![DrawCall::new(
-            area.center_size(text.size()),
+            area.center_rect(text.rect()).pos,
             DrawCallKind::PrintLine(text.limit_size(area.size())),
         )]);
     })

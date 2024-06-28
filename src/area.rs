@@ -1,34 +1,37 @@
 use crate::{
     draw_call::{DrawCall, DrawCalls, NonAbsolute},
     pair::*,
+    rect::Rect,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Area {
-    pos: Pair<Pos>,
-    size: Pair<Size>,
+    rect: Rect,
     calls: DrawCalls,
 }
 
 impl Area {
-    pub fn new(pos: Pair<Pos>, size: Pair<Size>) -> Self {
+    pub fn new(rect: Rect) -> Self {
         Self {
-            pos,
-            size,
+            rect,
             calls: DrawCalls::new(),
         }
     }
 
+    pub fn rect(&self) -> Rect {
+        self.rect.with_pos(Pair::fill(0))
+    }
+
     pub fn size(&self) -> Pair<Size> {
-        self.size
+        self.rect.size
     }
 
     pub fn center(&self) -> Pair<Pos> {
-        self.size.center()
+        self.rect.with_pos(Pair::fill(0)).center()
     }
 
-    pub fn center_size(&self, size: Pair<Size>) -> Pair<Pos> {
-        self.size.center() - size.center()
+    pub fn center_rect(&self, rect: Rect) -> Rect {
+        rect.center_in(self.rect())
     }
 
     pub fn push(&mut self, call: DrawCall<NonAbsolute>) {
@@ -40,7 +43,7 @@ impl Area {
     }
 
     pub fn try_push(&mut self, call: DrawCall<NonAbsolute>) -> Result<(), AreaOverflowError> {
-        if let Some(absolute) = call.to_absolute(self.pos, self.size) {
+        if let Some(absolute) = call.to_absolute(self.rect) {
             self.calls.push(absolute);
 
             return Ok(());
@@ -60,22 +63,24 @@ impl Area {
         Ok(())
     }
 
-    pub fn sub_element(
-        &mut self,
-        sub_pos: Pair<Pos>,
-        sub_size: Pair<Size>,
-        sub_element: Element,
-    ) -> Result<(), AreaOverflowError> {
-        let sub_pos = self.pos + sub_pos;
+    pub fn push_element(&mut self, rect: Rect, element: Element) {
+        let _ = self.try_push_element(rect, element);
+    }
 
-        if !sub_pos.is_inside(sub_size, self.pos, self.size) {
+    pub fn try_push_element(
+        &mut self,
+        rect: Rect,
+        element: Element,
+    ) -> Result<(), AreaOverflowError> {
+        let mut area = Area::new(rect.map_pos(|pos| pos + self.rect.pos));
+
+        if !area.rect.is_inside(self.rect) {
             return Err(AreaOverflowError);
         }
 
-        let mut sub_area = Area::new(sub_pos, sub_size);
-        sub_element(&mut sub_area);
+        element(&mut area);
 
-        self.calls.extend(sub_area.collect());
+        self.calls.extend(area.collect());
 
         Ok(())
     }

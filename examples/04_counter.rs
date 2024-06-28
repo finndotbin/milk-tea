@@ -6,7 +6,6 @@ use milk_tea::{
     area::{Area, Element},
     draw_call::{DrawCall, DrawCallKind},
     event::{Event, KeyCode, KeyEvent, KeyEventKind},
-    pair::Pair,
     run,
     style::{ContentStyle, Stylize},
     text_size::UnicodeSize,
@@ -23,12 +22,7 @@ fn view(state: &Model, area: &mut Area) {
         Ordering::Equal => ContentStyle::new().grey(),
     };
 
-    area.sub_element(
-        Pair::fill(0),
-        area.size(),
-        center(style, format!("{}", state.count)),
-    )
-    .unwrap();
+    area.push_element(area.rect(), center(style, format!("{}", state.count)))
 }
 
 /// Returns an `Element` with centered text. `Element`s are just closures that take in an `&mut
@@ -36,9 +30,12 @@ fn view(state: &Model, area: &mut Area) {
 fn center(style: ContentStyle, text: String) -> Element {
     Box::new(move |area| {
         area.push_all(vec![
-            DrawCall::new(area.center_size(text.size()), DrawCallKind::SetStyle(style)),
             DrawCall::new(
-                area.center_size(text.size()),
+                area.center_rect(text.rect()).pos,
+                DrawCallKind::SetStyle(style),
+            ),
+            DrawCall::new(
+                area.center_rect(text.rect()).pos,
                 DrawCallKind::PrintLine(text.limit_size(area.size())),
             ),
         ]);
